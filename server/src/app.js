@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import healthRouter from './routes/health.js';
+import documentRouter from './routes/documents.js';
 import { errorHandler, notFound } from './middleware/error.js';
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/health', healthRouter);
+app.use('/api/documents', documentRouter);
 
 // 404
 app.use(notFound);
