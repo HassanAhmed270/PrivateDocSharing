@@ -1,0 +1,9 @@
+{
+  "name": "privateai-agent-root",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [],
+  "scripts": {
+    "-": "echo 'Run client and server separately: see README'"
+  }
+}
