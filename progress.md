@@ -115,3 +115,77 @@ Next recommended actions for the lead engineer
 4. Notify the team they may branch off main and begin feature work.
 
 End of progress.md
+
+
+Stage 1 — Authentication Foundation
+-----------------------------------
+Status: COMPLETE
+
+Completion summary
+------------------
+Stage 1 authentication foundation has been implemented and is ready to be committed/pushed before beginning Stage 2.
+
+Completed Stage 1 items
+-----------------------
+- Added authentication dependencies:
+  - bcryptjs
+  - jsonwebtoken
+- Added User model with:
+  - name
+  - email
+  - password hash storage
+  - role
+  - organizationId
+  - timestamps
+- Added Organization model so users can be associated with an organization.
+- Implemented secure registration endpoint:
+  - POST /api/auth/register
+  - validates required fields
+  - normalizes email
+  - rejects duplicate emails
+  - hashes passwords before storage
+  - creates/associates organization
+  - assigns initial role
+  - returns safe user information only
+- Implemented secure login endpoint:
+  - POST /api/auth/login
+  - finds user by normalized email
+  - verifies entered password with bcrypt.compare(enteredPassword, storedPasswordHash)
+  - returns 401 for invalid credentials
+  - generates JWT only after successful verification
+- Implemented JWT utility behavior:
+  - payload includes userId, role, organizationId
+  - secret comes from environment variables
+  - expiration comes from environment variables
+- Implemented authentication middleware:
+  - protect
+  - reads Authorization: Bearer <token>
+  - rejects missing, invalid, and expired tokens with 401
+  - attaches authenticated identity to req.user
+- Implemented temporary protected endpoint:
+  - GET /api/auth/me
+  - verifies JWT protection works
+  - does not expose password/sensitive fields
+- Added/updated auth tests covering registration, duplicate registration, password hashing, login, JWT payload, protected route access, missing/invalid token handling, and expired token handling.
+
+Security notes
+--------------
+- Plaintext passwords are not stored.
+- Passwords/password hashes are not returned to the frontend.
+- Login uses bcrypt.compare against the stored hash, not comparison of newly generated hashes.
+- JWT secret and expiration are environment-driven.
+- .env files remain ignored and should not be committed.
+
+Stage boundary
+--------------
+Stage 1 is complete only. Stage 2 role definitions, role middleware, document routes, request routes, messaging, notifications, AI, and signatures have not been implemented as part of Stage 1.
+
+Next step
+---------
+Commit and push Stage 1, then begin Stage 2.
+
+Suggested commit
+----------------
+git add .
+git commit -m "feat: implement authentication and jwt"
+git push origin main

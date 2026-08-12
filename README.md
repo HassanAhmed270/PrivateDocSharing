@@ -8,7 +8,7 @@ This commit is a one-time setup on main. Four feature branches should be created
 - feat/encryption
 - feat/frontend
 
-Important: This initial skeleton deliberately does NOT implement authentication, users, roles, AI agent logic, encryption, or any feature code. It provides a clean foundation only.
+Stage 0 initial skeleton is present. Stage 1 adds the authentication foundation only: registration, login, bcrypt password hashing, JWT creation/verification, and a temporary protected `/api/auth/me` endpoint. Role authorization, documents, requests, messaging, notifications, AI, encryption, and signatures are not implemented yet.
 
 Repository layout
 
@@ -49,6 +49,8 @@ Getting started (development)
 
   PORT=5000
   MONGODB_URI=mongodb://localhost:27017/privateai
+  JWT_SECRET=replace-with-a-long-random-secret
+  JWT_EXPIRES_IN=1d
 
 - Run in development mode (uses nodemon)
   npm run dev
@@ -66,6 +68,17 @@ Response:
   "message": "PrivateAI Agent API is running"
 }
 
+Authentication endpoints
+
+- POST http://localhost:5000/api/auth/register
+  Body: `{ "name": "Owner", "email": "owner@example.com", "password": "secret123", "organizationName": "Example Org" }`
+- POST http://localhost:5000/api/auth/login
+  Body: `{ "email": "owner@example.com", "password": "secret123" }`
+- GET http://localhost:5000/api/auth/me
+  Header: `Authorization: Bearer <token>`
+
+Auth responses return a JWT and safe user fields only; passwords are never returned.
+
 2. Frontend
 
 - Change to the client folder
@@ -79,7 +92,7 @@ Response:
 
 Notes
 
-- This is the shared foundation commit. Do NOT implement feature work on main. Branch from main and create feature branches named as agreed.
+- Stage 1 authentication is implemented without Stage 2 role authorization or later feature work.
 - The server is ES modules (package.json has "type": "module").
 - server/.env is included here as a placeholder but should not be committed in a real project; .gitignore prevents it from being tracked.
 
