@@ -12,6 +12,10 @@ export function errorHandler(err, req, res, next) {
   };
 
   // Do not leak stack trace in production
+  if (err.details) {
+    payload.details = err.details;
+  }
+
   if (process.env.NODE_ENV !== 'production') {
     payload.stack = err.stack;
   }

@@ -3,9 +3,12 @@ dotenv.config();
 
 import app from './app.js';
 import { connectToDatabase } from './config/db.js';
+import { getEncryptionConfig } from './config/encryption.js';
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
+
+getEncryptionConfig();
 
 async function start() {
   // Connect to DB but do not crash the process if it fails. Log clearly.
