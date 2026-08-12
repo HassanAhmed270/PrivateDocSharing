@@ -1,23 +1,22 @@
 import mongoose from 'mongoose';
-import debug from 'debug';
-
-const log = debug('privateai:db');
 
 export async function connectToDatabase(mongoUri) {
   if (!mongoUri) {
-    console.error('MONGODB_URI not provided; skipping DB connection. Set MONGODB_URI in environment.');
-    return null;
+    throw new Error('MONGODB_URI is not configured');
   }
 
+  mongoose.set('strictQuery', true);
+
   try {
-    mongoose.set('strictQuery', true);
-    const conn = await mongoose.connect(mongoUri, {
-      // useNewUrlParser and useUnifiedTopology are default in mongoose v6+
-    });
-    console.log(`MongoDB connected: ${conn.connection.host}:${conn.connection.port}/${conn.connection.name}`);
-    return conn;
-  } catch (err) {
-    console.error('Failed to connect to MongoDB:', err.message || err);
-    return null;
+    const connection = await mongoose.connect(mongoUri);
+
+    console.log(
+      `MongoDB connected: ${connection.connection.host}:${connection.connection.port}/${connection.connection.name}`,
+    );
+
+    return connection;
+  } catch (error) {
+    console.error('MongoDB connection failed:', error.message);
+    throw error;
   }
 }

@@ -1,20 +1,21 @@
-export function notFound(req, res, next) {
-  res.status(404).json({ success: false, message: 'Route not found' });
+export function notFound(req, res) {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+  });
 }
 
 export function errorHandler(err, req, res, next) {
-  const status = err.status || 500;
-  const message = err.message || 'Internal Server Error';
+  const statusCode = Number.isInteger(err.statusCode) ? err.statusCode : 500;
 
-  const payload = {
+  const response = {
     success: false,
-    message,
+    message: statusCode === 500 ? 'Internal server error' : err.message,
   };
 
-  // Do not leak stack trace in production
-  if (process.env.NODE_ENV !== 'production') {
-    payload.stack = err.stack;
+  if (process.env.NODE_ENV !== 'production' && err.stack) {
+    response.stack = err.stack;
   }
 
-  res.status(status).json(payload);
+  res.status(statusCode).json(response);
 }
