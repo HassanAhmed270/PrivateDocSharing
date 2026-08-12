@@ -162,3 +162,56 @@ Notes / Assumptions
 - Do NOT implement auth pages or auth context in this stage per your instructions.
 
 End of Stage 1 entry
+
+
+STAGE 2A — Auth Pages & Session (work in this branch)
+-----------------------------------------------------
+Date: 2026-08-12
+
+Summary of changes prepared for Stage 2A (to commit):
+- Added client-side auth pages:
+  - client/src/pages/Register.jsx
+  - client/src/pages/Login.jsx
+- Added a minimal AuthContext to manage session state and persistence:
+  - client/src/context/AuthContext.jsx
+- Updated client/src/App.jsx to wire routes for /, /login, /register and use the AuthProvider.
+- Added react-router-dom to client/package.json so the new pages and navigation work in dev.
+
+Behavior implemented:
+- Register page performs client-side validation and requires emails to end with @techtitan.com (client-side only).
+- Login page calls the context login() which stores token and user in localStorage on success.
+- AuthContext rehydrates on app load: if a token exists it calls GET /api/auth/me to validate and load the user; on failure it clears localStorage and resets state.
+- logout() clears localStorage and resets context.
+
+Files to commit for Stage 2A:
+- client/src/pages/Register.jsx
+- client/src/pages/Login.jsx
+- client/src/context/AuthContext.jsx
+- client/src/App.jsx
+- client/package.json (add react-router-dom)
+- progress.md (this file, with Stage 2A entry)
+
+Status: ready to commit locally.
+
+Notes / next steps for you (run locally):
+1) From repo root stage these files:
+   git add client/src/pages/Register.jsx client/src/pages/Login.jsx client/src/context/AuthContext.jsx client/src/App.jsx client/package.json progress.md
+2) Commit with the required message:
+   git commit -m "feat: add auth pages and session context"
+3) Push to your feature branch:
+   git push origin HEAD
+
+After pushing you may replace any placeholder hashes in this file with the real commit hash.
+
+Testing guidance (manual):
+- Register with an email that ends with @example.org should proceed to call the backend endpoint. The backend performs authoritative validation; client blocks obvious mismatches.
+- Register with an email not ending with @example.org should be blocked client-side.
+- Login with valid credentials should store token and user in localStorage and redirect to '/'.
+- Login with invalid credentials should show an error message from the server if available.
+- Refreshing the page with a valid token should keep the user logged in if the backend returns a valid /api/auth/me response.
+- If the token is invalid/expired, /api/auth/me should fail and the context will clear localStorage and treat the user as logged out.
+
+Limitations / assumptions:
+- The org domain check on Register is client-side only and uses the constant ORG_DOMAIN = '@techtitan.com'.
+- The server endpoints are expected at /api/auth/register, /api/auth/login, /api/auth/me and to return a JSON payload shaped like { token, user } or similar (the context handles a few common variations).
+- No protected routes, redirection guards, or dashboard pages were implemented in this stage.
