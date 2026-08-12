@@ -78,9 +78,17 @@
   - Secure Access Guard checking relationship to request, throwing simulated 403 / access denied on unauthorized attempts.
 - **Commit:** `acdd81f` (`feat: add request detail page with document view and discussion`)
 
+### STAGE 7 — Signature Capture
+- **Goal:** Enable the assigned recipient to draw, clear, and submit a secure graphical signature to progress the request status to SIGNED.
+- **Key Deliverables:**
+  - `client/src/components/SignatureCanvas.jsx` — HTML5 canvas component tracking mouse & touch drawing strokes.
+  - Integration within `RequestDetail.jsx` showing the signature box only to assigned recipient in the correct status.
+  - Submits graphical signature as Base64 image payload to `PATCH /api/requests/:id/status`.
+  - Displays the captured signature block in the detail section once signed.
+- **Commit:** `bc56206` (`feat: add signature capture to request detail page`)
+
 ---
 
 ## 📋 Next Stage Pending
-- **STAGE 7:** Signature Capture (`PATCH /api/requests/:id/status`)
 - **STAGE 8:** Agent Chat Window (`POST /api/agent/command`)
 - **STAGE 9:** Notifications & UI Polish (`GET /api/notifications`, `PATCH /api/notifications/:id/read`)
