@@ -12,6 +12,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import RequestDetail from './pages/RequestDetail.jsx';
 import RequestsList from './pages/RequestsList.jsx';
+import Forbidden from './pages/Forbidden.jsx';
 import { OWNER_REVIEWER_ROLES } from './utils/roles.js';
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
           </PublicOnlyRoute>
         }
       />
+      <Route path="/forbidden" element={<Forbidden />} />
 
       <Route
         element={
