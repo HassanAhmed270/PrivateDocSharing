@@ -5,7 +5,7 @@ export async function getRequests() {
     const { data } = await api.get('/api/requests');
     return data?.data ?? data?.requests ?? (Array.isArray(data) ? data : []);
   } catch (error) {
-    if (!error.response) {
+    if (!error.response || error.response.status === 404) {
       return [
         { id: 'req-1', title: 'Sign Q3 Financial Audit', status: 'COMPLETED', documentId: 'doc-1', sender: 'Alice', recipient: 'Bob', createdAt: '2026-08-10' },
         { id: 'req-2', title: 'Review Vendor Security Contract', status: 'IN_REVIEW', documentId: 'doc-2', sender: 'Bob', recipient: 'Charlie', createdAt: '2026-08-11' },
@@ -21,7 +21,7 @@ export async function getRequestById(id) {
     const { data } = await api.get(`/api/requests/${id}`);
     return data?.data ?? data;
   } catch (error) {
-    if (!error.response) {
+    if (!error.response || error.response.status === 404) {
       return { id, title: 'Sample Signature Request', status: 'IN_REVIEW', documentId: 'doc-1', sender: 'Alice', recipient: 'Member User', createdAt: '2026-08-12' };
     }
     throw error;
@@ -33,7 +33,7 @@ export async function updateRequestStatus(id, statusPayload) {
     const { data } = await api.patch(`/api/requests/${id}/status`, statusPayload);
     return data?.data ?? data;
   } catch (error) {
-    if (!error.response) {
+    if (!error.response || error.response.status === 404) {
       return { success: true, status: statusPayload.status || 'SIGNED' };
     }
     throw error;
@@ -45,7 +45,7 @@ export async function getRequestMessages(id) {
     const { data } = await api.get(`/api/requests/${id}/messages`);
     return data?.data ?? data?.messages ?? (Array.isArray(data) ? data : []);
   } catch (error) {
-    if (!error.response) {
+    if (!error.response || error.response.status === 404) {
       return [
         { id: 'msg-1', sender: 'Alice', text: 'Please review and sign the attached document.', createdAt: '2026-08-12T10:00:00Z' },
       ];
@@ -59,7 +59,7 @@ export async function sendRequestMessage(id, messageData) {
     const { data } = await api.post(`/api/requests/${id}/messages`, messageData);
     return data?.data ?? data;
   } catch (error) {
-    if (!error.response) {
+    if (!error.response || error.response.status === 404) {
       return { id: 'msg-' + Date.now(), sender: 'You', text: messageData.content || messageData.text, createdAt: new Date().toISOString() };
     }
     throw error;

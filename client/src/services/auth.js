@@ -28,8 +28,8 @@ export async function registerUser({ name, email, password }) {
     });
     return data;
   } catch (error) {
-    if (!error.response) {
-      console.warn('Backend unavailable, using mock registration fallback.');
+    if (!error.response || error.response.status === 404) {
+      console.warn('Backend unavailable or route not implemented, using mock registration fallback.');
       return { success: true, message: 'Registration successful (Demo Mode)' };
     }
     throw error;
@@ -44,8 +44,8 @@ export async function loginUser({ email, password }) {
     });
     return normalizeAuthPayload(data);
   } catch (error) {
-    if (!error.response) {
-      console.warn('Backend unavailable, using mock login fallback.');
+    if (!error.response || error.response.status === 404) {
+      console.warn('Backend unavailable or route not implemented, using mock login fallback.');
       return {
         token: 'demo-jwt-token-xyz',
         user: {
@@ -66,7 +66,7 @@ export async function getCurrentUser() {
     const rawUser = data?.data?.user ?? data?.user ?? data?.data ?? data;
     return pickStoredUserFields(rawUser);
   } catch (error) {
-    if (!error.response) {
+    if (!error.response || error.response.status === 404) {
       try {
         const storedUser = localStorage.getItem('privateai_auth_user');
         if (storedUser) {
