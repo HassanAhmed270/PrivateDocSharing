@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getRequestById, getRequestMessages, sendRequestMessage, updateRequestStatus } from '../services/requests.js';
 import { getDocumentById } from '../services/documents.js';
+import SignatureCanvas from '../components/SignatureCanvas.jsx';
 
 function RequestDetail() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ function RequestDetail() {
   const [error, setError] = useState(null);
   const [sendingMsg, setSendingMsg] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showSignCanvas, setShowSignCanvas] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -79,12 +81,13 @@ function RequestDetail() {
     }
   }
 
-  async function handleStatusChange(newStatus) {
+  async function handleStatusChange(newStatus, signatureImage = null) {
     setUpdatingStatus(true);
     try {
-      await updateRequestStatus(id, { status: newStatus });
-      setRequest((prev) => ({ ...prev, status: newStatus }));
-      toast.success(`Status updated to ${newStatus}`);
+      await updateRequestStatus(id, { status: newStatus, signature: signatureImage });
+      setRequest((prev) => ({ ...prev, status: newStatus, signature: signatureImage }));
+      toast.success(newStatus === 'SIGNED' ? 'Document signed successfully!' : `Status updated to ${newStatus}`);
+      setShowSignCanvas(false);
     } catch (err) {
       toast.error('Failed to update status.');
     } finally {
@@ -193,7 +196,7 @@ function RequestDetail() {
           <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-xl backdrop-blur-md space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Request Actions</h3>
             
-            <div className="space-y-2">
+            <div className="space-y-4">
               {request.status === 'SENT' && isRecipient && (
                 <button
                   onClick={() => handleStatusChange('IN_REVIEW')}
@@ -214,16 +217,42 @@ function RequestDetail() {
                 </button>
               )}
 
-              {request.status === 'DISCUSSION' && isRecipient && (
-                <div className="rounded-2xl bg-slate-950 p-4 border border-white/5 text-center text-xs text-slate-400">
-                  Ready to sign? Proceed to next validation phase.
+              {request.status === 'DISCUSSION' && isRecipient && !showSignCanvas && (
+                <button
+                  onClick={() => setShowSignCanvas(true)}
+                  disabled={updatingStatus}
+                  className="w-full rounded-2xl bg-brand-500 py-3 text-sm font-semibold text-white hover:bg-brand-600 transition disabled:opacity-50 shadow-lg shadow-brand-500/25"
+                >
+                  Sign Document
+                </button>
+              )}
+
+              {showSignCanvas && isRecipient && (
+                <div className="space-y-3 rounded-2xl bg-slate-950 p-4 border border-white/5">
+                  <p className="text-xs font-semibold text-slate-400">Draw Signature</p>
+                  <SignatureCanvas
+                    onSave={(img) => handleStatusChange('SIGNED', img)}
+                    onCancel={() => setShowSignCanvas(false)}
+                  />
                 </div>
               )}
 
               {(request.status === 'COMPLETED' || request.status === 'SIGNED') && (
-                <div className="rounded-2xl bg-emerald-500/10 p-4 border border-emerald-500/20 text-center text-xs text-emerald-300 flex items-center justify-center gap-2">
-                  <HiCheckCircle className="h-5 w-5 shrink-0" />
-                  <span>Document signed & workflow completed.</span>
+                <div className="space-y-4">
+                  <div className="rounded-2xl bg-emerald-500/10 p-4 border border-emerald-500/20 text-center text-xs text-emerald-300 flex items-center justify-center gap-2">
+                    <HiCheckCircle className="h-5 w-5 shrink-0" />
+                    <span>Document signed & workflow completed.</span>
+                  </div>
+                  {request.signature && (
+                    <div className="rounded-2xl border border-white/10 bg-slate-950 p-4 text-center">
+                      <p className="text-xs text-slate-400 mb-2 font-semibold">Captured Signature</p>
+                      <img
+                        src={request.signature}
+                        alt="Signature"
+                        className="mx-auto max-h-16 object-contain rounded-lg border border-white/5 p-1 bg-white/5"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
