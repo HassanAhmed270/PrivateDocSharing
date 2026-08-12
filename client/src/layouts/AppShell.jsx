@@ -1,7 +1,10 @@
-import { NavLink, Outlet } from 'react-router-dom';
-import { FiCpu, FiFileText, FiGrid, FiLogOut, FiPlusCircle, FiSend } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { FiCpu, FiFileText, FiGrid, FiLogOut, FiPlusCircle, FiSend, FiBell } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext.jsx';
 import { isRoleAllowed, OWNER_REVIEWER_ROLES } from '../utils/roles.js';
+import { getNotifications, markNotificationRead } from '../services/notifications.js';
+import toast from 'react-hot-toast';
 
 const navigationItems = [
   { label: 'Dashboard', to: '/dashboard', icon: FiGrid },
@@ -27,9 +30,44 @@ function getNavLinkClass({ isActive }) {
 
 function AppShell() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const visibleNavigation = navigationItems.filter((item) =>
     isRoleAllowed(user?.role, item.allowedRoles || []),
   );
+
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const notifs = await getNotifications();
+        setNotifications(notifs);
+      } catch (err) {
+        // Fail silently in shell header
+      }
+    }
+    if (user) {
+      loadNotifications();
+    }
+  }, [user]);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  async function handleNotificationClick(notif) {
+    setShowDropdown(false);
+    try {
+      await markNotificationRead(notif.id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+      );
+      if (notif.requestId) {
+        navigate(`/requests/${notif.requestId}`);
+      }
+    } catch (err) {
+      toast.error('Failed to mark notification as read.');
+    }
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -44,7 +82,54 @@ function AppShell() {
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 md:justify-end">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 md:justify-end relative">
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="relative rounded-xl border border-white/10 p-2.5 hover:bg-white/15 transition text-slate-300 hover:text-white"
+              >
+                <FiBell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-extrabold text-white ring-2 ring-slate-950">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown overlay */}
+              {showDropdown && (
+                <div className="absolute right-0 mt-3 z-50 w-80 rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-2xl backdrop-blur-md">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Notifications</span>
+                    <span className="text-[10px] bg-brand-500/25 px-2 py-0.5 rounded text-brand-300 font-semibold">{unreadCount} Unread</span>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <p className="py-6 text-center text-xs text-slate-500">No notifications found.</p>
+                  ) : (
+                    <ul className="max-h-60 overflow-y-auto divide-y divide-white/5 space-y-1 pr-1 scrollbar-thin">
+                      {notifications.map((n) => (
+                        <li key={n.id} className="py-2">
+                          <button
+                            onClick={() => handleNotificationClick(n)}
+                            className={`w-full text-left rounded-xl p-2 transition text-xs ${
+                              n.read
+                                ? 'text-slate-400 hover:bg-white/5'
+                                : 'bg-brand-500/10 text-white font-semibold hover:bg-brand-500/15'
+                            }`}
+                          >
+                            <p className="truncate">{n.title || 'Notification'}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{user?.name || 'User'}</p>
               <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
