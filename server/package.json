@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon --watch 'src/**/*.js' --exec node --enable-source-maps src/server.js",
-    "test": "node --test server/test/intentSchema.test.js"
+    "test": "node --test test/intentSchema.test.js"
   },
   "keywords": [],
   "author": "",

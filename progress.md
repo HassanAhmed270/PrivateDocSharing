@@ -144,3 +144,52 @@ Commit:
 - feat: define agent intent schema and validator
 
 You can now push these changes. Stage 2 is complete.
+
+
+Stage 3 — Testing, Documentation and Push Preparation
+-----------------------
+Date: 2026-08-12
+
+Completed work:
+- Verified the Stage 2 intent schema implementation and tests are present in the workspace:
+  - server/src/agent/intentSchema.js
+  - server/test/intentSchema.test.js
+  - server/package.json (test script)
+- Corrected the server test script path in server/package.json to run the test file from the package root ("node --test test/intentSchema.test.js").
+- Re-ran the targeted intent schema tests (node --test) — they pass.
+
+Files changed in this phase:
+- server/package.json (fixed test script)
+- progress.md (this file, updated with Stage 3 summary)
+
+Verification steps performed:
+- From repository root run: npm --prefix server test
+  - This executes: node --test test/intentSchema.test.js
+  - Expected: all assertions pass and the test prints 'All intent schema tests passed'.
+- Inspected the validator and tests to ensure they are pure and make no side-effects.
+
+Decisions / notes:
+- Kept the strict closed-schema validator and focused tests as implemented in Stage 2.
+- Only a minor test script path fix was required to run tests via npm --prefix server test from repo root.
+- No new runtime routes, services, or permissions were added (per constraints).
+
+Commit to make and push (run locally):
+- Commit message: feat: define agent intent schema and validator
+- Files to include in commit (if not already committed):
+  - server/src/agent/intentSchema.js
+  - server/test/intentSchema.test.js
+  - server/package.json
+  - progress.md
+
+Suggested local commands to finalize and push (run in your environment):
+
+# From repository root
+git add server/src/agent/intentSchema.js server/test/intentSchema.test.js server/package.json progress.md
+git commit -m "feat: define agent intent schema and validator"
+git push origin agent
+
+Notes / assumptions:
+- This environment cannot run git push to the remote repository; please run the git commands above in your development environment to push the agent branch.
+- Tests were written for Node 18+ using the built-in test runner (node --test). Ensure your environment has a compatible Node version.
+
+Stage 2 and Stage 3 are complete and ready to push.
