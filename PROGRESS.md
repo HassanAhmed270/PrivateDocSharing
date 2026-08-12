@@ -87,8 +87,16 @@
   - Displays the captured signature block in the detail section once signed.
 - **Commit:** `bc56206` (`feat: add signature capture to request detail page`)
 
+### STAGE 8 — Agent Chat Window
+- **Goal:** Build the natural language chat workspace for the AI agent, implementing a double-confirmation action loop.
+- **Key Deliverables:**
+  - `client/src/pages/AgentChat.jsx` — Chat messaging workspace with styled chat bubbles.
+  - Integration with `POST /api/agent/command` to extract the user command's interpreted intent.
+  - Implemented the Confirm/Cancel command interception UI component.
+  - Mapped successful confirmation to trigger underlying REST endpoints (like `POST /api/requests` for `SEND_DOCUMENT` intent).
+- **Commit:** `f91e061` (`feat: add agent chat window`)
+
 ---
 
 ## 📋 Next Stage Pending
-- **STAGE 8:** Agent Chat Window (`POST /api/agent/command`)
 - **STAGE 9:** Notifications & UI Polish (`GET /api/notifications`, `PATCH /api/notifications/:id/read`)
