@@ -69,10 +69,18 @@
   - Toast notifications via `react-hot-toast` for upload success/error.
 - **Commit:** `b4b6541` (`feat: add document upload and listing pages`)
 
+### STAGE 6 — Request Detail Page (Message Dialog Style)
+- **Goal:** Build the request dialogue workspace, integrating secure document viewing, discussion messaging, and status actions on a single page.
+- **Key Deliverables:**
+  - `client/src/pages/RequestsList.jsx` — Filterable signature requests dashboard feed.
+  - `client/src/pages/RequestDetail.jsx` — Splitted view including a simulated document viewer, scrollable discussion thread feed, and status state transition triggers.
+  - Integration with `GET /api/requests/:id`, `GET /api/requests/:id/messages`, and `POST /api/requests/:id/messages`.
+  - Secure Access Guard checking relationship to request, throwing simulated 403 / access denied on unauthorized attempts.
+- **Commit:** `acdd81f` (`feat: add request detail page with document view and discussion`)
+
 ---
 
 ## 📋 Next Stage Pending
-- **STAGE 6:** Request Detail Page (Message Dialog Style) (`GET /api/requests/:id`, `GET /api/requests/:id/messages`, `POST /api/requests/:id/messages`)
 - **STAGE 7:** Signature Capture (`PATCH /api/requests/:id/status`)
 - **STAGE 8:** Agent Chat Window (`POST /api/agent/command`)
 - **STAGE 9:** Notifications & UI Polish (`GET /api/notifications`, `PATCH /api/notifications/:id/read`)
