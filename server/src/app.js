@@ -8,29 +8,16 @@ import { errorHandler, notFound } from './middleware/error.js';
 
 const app = express();
 
-// Basic security headers
 app.use(helmet());
-
-// CORS - allow all origins for now; feature branches should lock this down
 app.use(cors());
-
-// Logging
-if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
-}
-
-// Body parsing
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Routes
 app.use('/api/health', healthRouter);
 
-// 404
 app.use(notFound);
-
-// Error handler
 app.use(errorHandler);
 
 export default app;

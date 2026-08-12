@@ -1,12 +1,12 @@
 {
   "name": "privateai-server",
   "version": "0.1.0",
-  "description": "PrivateAI Agent backend skeleton",
+  "description": "PrivateAI Agent backend foundation",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon --watch 'src/**/*.js' --exec node --enable-source-maps src/server.js"
+    "dev": "nodemon src/server.js"
   },
   "keywords": [],
   "author": "",
