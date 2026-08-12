@@ -1,9 +1,19 @@
 import bcrypt from 'bcryptjs';
 import Organization from '../models/Organization.js';
-import User from '../models/User.js';
+import User, { USER_ROLES } from '../models/User.js';
 import { generateToken, normalizeEmail, toSafeUser } from '../utils/auth.js';
 
 const BCRYPT_COST = 12;
+
+export function buildNewOrganizationOwnerInput({ name, email }, organizationId, passwordHash) {
+  return {
+    name: name.trim(),
+    email,
+    password: passwordHash,
+    role: USER_ROLES.OWNER,
+    organizationId,
+  };
+}
 
 function requireFields(fields) {
   const missing = Object.entries(fields)
@@ -32,13 +42,10 @@ export async function register(req, res, next) {
     const organization = await Organization.create({ name: organizationName.trim() });
     const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
 
-    const user = await User.create({
-      name: name.trim(),
-      email,
-      password: passwordHash,
-      role: 'owner',
-      organizationId: organization._id,
-    });
+    const user = await User.create(buildNewOrganizationOwnerInput({ name, email }, organization._id, passwordHash));
+
+    organization.ownerId = user._id;
+    await organization.save();
 
     const token = generateToken(user);
 

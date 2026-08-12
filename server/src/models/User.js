@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
 
+export const USER_ROLES = Object.freeze({
+  OWNER: 'owner',
+  REVIEWER: 'reviewer',
+  MEMBER: 'member',
+});
+
+export const USER_ROLE_VALUES = Object.freeze(Object.values(USER_ROLES));
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -24,8 +32,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ['owner', 'reviewer', 'member'],
-      default: 'owner',
+      enum: USER_ROLE_VALUES,
+      default: USER_ROLES.MEMBER,
     },
     organizationId: {
       type: mongoose.Schema.Types.ObjectId,

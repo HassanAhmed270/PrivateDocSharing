@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
+import { buildNewOrganizationOwnerInput } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
+import User, { USER_ROLE_VALUES, USER_ROLES } from '../models/User.js';
 import { generateToken, normalizeEmail, toSafeUser } from '../utils/auth.js';
 
 function createMockResponse() {
@@ -107,4 +110,71 @@ test('protect rejects missing, invalid, and expired bearer tokens with 401', asy
     assert.equal(res.statusCode, 401);
     assert.equal(res.body.success, false);
   }
+});
+
+
+test('User role model explicitly supports owner, reviewer, and member', () => {
+  assert.deepEqual(USER_ROLE_VALUES, ['owner', 'reviewer', 'member']);
+
+  const organizationId = new mongoose.Types.ObjectId();
+  for (const role of USER_ROLE_VALUES) {
+    const user = new User({
+      name: `${role} user`,
+      email: `${role}@example.com`,
+      password: 'hashed-password',
+      role,
+      organizationId,
+    });
+
+    const validationError = user.validateSync();
+    assert.equal(validationError, undefined);
+  }
+});
+
+test('User role model rejects invalid roles', () => {
+  const user = new User({
+    name: 'Invalid Role User',
+    email: 'invalid@example.com',
+    password: 'hashed-password',
+    role: 'admin',
+    organizationId: new mongoose.Types.ObjectId(),
+  });
+
+  const validationError = user.validateSync();
+  assert.ok(validationError);
+  assert.ok(validationError.errors.role);
+});
+
+test('User role defaults securely to member when role is omitted', () => {
+  const user = new User({
+    name: 'Default Role User',
+    email: 'default@example.com',
+    password: 'hashed-password',
+    organizationId: new mongoose.Types.ObjectId(),
+  });
+
+  assert.equal(user.role, USER_ROLES.MEMBER);
+});
+
+test('registration ignores arbitrary role payloads and creates only a new organization owner', () => {
+  const requestedBody = {
+    name: 'Attacker',
+    email: 'attacker@example.com',
+    password: 'secret123',
+    organizationName: 'New Safe Org',
+    organizationId: new mongoose.Types.ObjectId().toString(),
+    role: USER_ROLES.MEMBER,
+  };
+  const serverOrganizationId = new mongoose.Types.ObjectId();
+
+  const allowedRegistrationFields = buildNewOrganizationOwnerInput(
+    { name: requestedBody.name, email: normalizeEmail(requestedBody.email) },
+    serverOrganizationId,
+    'hashed-password',
+  );
+
+  assert.equal(Object.hasOwn(allowedRegistrationFields, 'organizationName'), false);
+  assert.notEqual(allowedRegistrationFields.organizationId.toString(), requestedBody.organizationId);
+  assert.equal(allowedRegistrationFields.organizationId, serverOrganizationId);
+  assert.equal(allowedRegistrationFields.role, USER_ROLES.OWNER);
 });

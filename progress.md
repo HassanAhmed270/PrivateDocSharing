@@ -189,3 +189,114 @@ Suggested commit
 git add .
 git commit -m "feat: implement authentication and jwt"
 git push origin main
+
+
+Stage 2 — Role Definitions
+--------------------------
+Status: COMPLETE
+
+Completion summary
+------------------
+Stage 2 role definitions have been implemented without adding authorization middleware or later feature areas.
+
+Completed Stage 2 items
+-----------------------
+- Defined explicit organization role constants and enum values:
+  - owner
+  - reviewer
+  - member
+- Updated the User model role field to use the explicit enum.
+- Set the User model role default to member as the secure fallback for programmatic user creation.
+- Kept registration intentionally scoped so a new signup creates a new organization and becomes that new organization's owner.
+- Registration continues to ignore arbitrary client-supplied role and organizationId payload fields, preventing self-assignment as owner of an existing organization.
+- Ensured every user still requires organizationId.
+- Added an Organization ownerId relationship back to the owning User.
+- Added tests covering owner, reviewer, member, invalid role, secure default role behavior, and unauthorized role/organization assignment attempts.
+
+Stage boundary
+--------------
+Stage 2 is complete only. requireRole middleware, document routes, request routes, messaging, notifications, AI, encryption, and signatures have not been implemented.
+
+Suggested commit
+----------------
+git add .
+git commit -m "feat: define organization user roles"
+git push origin main
+
+
+Stage 0 — Skeleton Verification and Implementation
+--------------------------------------------------
+Status: COMPLETE
+
+Verification summary
+--------------------
+The Stage 0 baseline skeleton is present and runnable as the foundation for later stages.
+
+Verified Stage 0 items
+----------------------
+- Express backend scaffold exists under `server/` using ES modules.
+- Backend app wiring includes security/common middleware and route mounting in `server/src/app.js`.
+- Server entry point exists at `server/src/server.js` and loads environment variables before startup.
+- MongoDB connection helper exists at `server/src/config/db.js` using Mongoose.
+- Health route exists at `GET /api/health` and returns a simple API status response.
+- Central 404 and error middleware exists under `server/src/middleware/error.js`.
+- Vite React frontend scaffold exists under `client/` with `index.html`, `src/main.jsx`, `src/App.jsx`, and `src/styles.css`.
+- Repository-level `.gitignore` ignores Node modules, environment files, logs, editor files, and uploaded file contents while preserving `uploads/.gitkeep`.
+- `server/.env.example` documents required development environment variables.
+- Root README documents the project layout and development startup steps.
+
+Stage 0 boundary
+----------------
+Stage 0 is only the initial runnable backend/frontend skeleton. Authentication, role definitions, documents, requests, messaging, notifications, AI, encryption, and signatures are later-stage concerns and are not required for Stage 0 completion.
+
+Suggested Stage 0 verification commands
+---------------------------------------
+From the repository root:
+
+```bash
+cd server
+npm install
+npm run dev
+# In another terminal: curl http://localhost:5000/api/health
+
+cd ../client
+npm install
+npm run dev
+```
+
+Expected result
+---------------
+- Backend starts when valid environment values are provided and `GET /api/health` returns `{ "success": true, "message": "PrivateAI Agent API is running" }`.
+- Frontend Vite development server starts and renders the scaffolded React page.
+
+
+Latest Stage 1 status update
+----------------------------
+Status: COMPLETE
+
+Stage 1 Authentication Foundation has been re-checked in the workspace and is complete for push. The backend includes bcrypt password hashing, JWT generation/verification, User and Organization models, auth routes for registration/login, `protect` middleware, and the protected `GET /api/auth/me` endpoint. Passwords are stored only as hashes and are not returned in API-safe user payloads. JWT payloads include `userId`, `role`, and `organizationId`, with secret and expiration loaded from environment variables.
+
+Suggested Stage 1 push commands
+-------------------------------
+```bash
+git add .
+git commit -m "feat: implement authentication and jwt"
+git push origin main
+```
+
+
+Latest Stage 2 status update
+----------------------------
+Status: COMPLETE
+
+Stage 2 Role Definitions has been re-checked and completed in the workspace. The User model uses explicit role enum values (`owner`, `reviewer`, `member`), requires `organizationId`, and defaults omitted roles to `member` as a secure fallback. Registration is intentionally server-controlled: a signup creates a new organization, assigns the new user as that organization's `owner`, records `Organization.ownerId`, and ignores arbitrary client-supplied `role` or `organizationId` values so users cannot self-assign ownership in an existing organization.
+
+Tests cover valid owner/reviewer/member roles, invalid roles, secure default role behavior, JWT role payload behavior, and unauthorized role/organization assignment attempts during registration input construction.
+
+Suggested Stage 2 push commands
+-------------------------------
+```bash
+git add .
+git commit -m "feat: define organization user roles"
+git push origin main
+```

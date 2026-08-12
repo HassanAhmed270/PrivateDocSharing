@@ -8,6 +8,11 @@ const organizationSchema = new mongoose.Schema(
       trim: true,
       maxlength: [120, 'Organization name cannot exceed 120 characters'],
     },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
   },
   { timestamps: true },
 );
