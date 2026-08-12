@@ -2,7 +2,7 @@
 
 :root {
   color-scheme: dark;
-  font-synthesis: none;
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -11,6 +11,58 @@
 body {
   margin: 0;
   min-width: 320px;
+  background-color: #020617; /* Slate 950 */
+  color: #f8fafc; /* Slate 50 */
+}
+
+/* Custom premium scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5); /* Slate 900 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2); /* Slate 400 */
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.4); /* Sky 400 */
+}
+
+/* Glassmorphism utility classes */
+.glass-panel {
+  background: rgba(30, 41, 59, 0.35);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-dropdown {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Modern shadows & glows */
+.shadow-premium {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+.shadow-glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(34, 211, 238, 0.15);
+}
+
+.shadow-glow-brand {
+  box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.25);
+}
+
+/* Smooth custom transitions */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 button,
@@ -18,5 +70,6 @@ a,
 input,
 textarea,
 select {
-  font: inherit;
+  font-family: inherit;
 }
+

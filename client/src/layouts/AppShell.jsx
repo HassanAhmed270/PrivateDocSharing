@@ -21,10 +21,10 @@ const navigationItems = [
 
 function getNavLinkClass({ isActive }) {
   return [
-    'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition',
+    'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200',
     isActive
-      ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
-      : 'text-slate-300 hover:bg-white/10 hover:text-white',
+      ? 'bg-gradient-to-r from-sky-500 to-brand-500 text-white shadow-glow-brand'
+      : 'text-slate-400 hover:bg-white/[0.06] hover:text-white hover:translate-x-1',
   ].join(' ');
 }
 
@@ -70,29 +70,29 @@ function AppShell() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="min-h-screen bg-[#020617] text-white">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
-        <header className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-center md:justify-between">
+        <header className="flex flex-col gap-4 border-b border-white/5 pb-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-100/80">
+            <p className="text-sm font-bold uppercase tracking-[0.24em] bg-gradient-to-r from-sky-400 to-brand-300 bg-clip-text text-transparent">
               PrivateAI Agent
             </p>
-            <p className="mt-1 text-sm text-slate-400">
-              Protected workspace routing shell
+            <p className="mt-1 text-xs text-slate-500">
+              Secured Document Authorization Workspace
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 md:justify-end relative">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-slate-900/40 px-4 py-2.5 md:justify-end relative backdrop-blur-md">
             {/* Notification Bell */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="relative rounded-xl border border-white/10 p-2.5 hover:bg-white/15 transition text-slate-300 hover:text-white"
+                className="relative rounded-xl border border-white/5 p-2.5 hover:bg-white/5 transition text-slate-400 hover:text-white"
               >
-                <FiBell className="h-5 w-5" />
+                <FiBell className="h-4.5 w-4.5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-extrabold text-white ring-2 ring-slate-950">
+                  <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rose-500 text-[9px] font-extrabold text-white ring-2 ring-slate-950">
                     {unreadCount}
                   </span>
                 )}
@@ -100,7 +100,7 @@ function AppShell() {
 
               {/* Notification Dropdown overlay */}
               {showDropdown && (
-                <div className="absolute right-0 mt-3 z-50 w-80 rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-2xl backdrop-blur-md">
+                <div className="absolute right-0 mt-3 z-50 w-80 rounded-2xl border border-white/10 bg-slate-900/90 p-4 shadow-2xl backdrop-blur-xl glass-dropdown">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Notifications</span>
                     <span className="text-[10px] bg-brand-500/25 px-2 py-0.5 rounded text-brand-300 font-semibold">{unreadCount} Unread</span>
@@ -132,14 +132,14 @@ function AppShell() {
 
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{user?.name || 'User'}</p>
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
                 {user?.role || 'role pending'}
               </p>
             </div>
             <button
               type="button"
               onClick={logout}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10 transition"
             >
               <FiLogOut aria-hidden="true" />
               Logout
@@ -148,7 +148,7 @@ function AppShell() {
         </header>
 
         <div className="grid flex-1 gap-6 py-6 lg:grid-cols-[16rem_1fr]">
-          <aside className="rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-3 lg:self-start">
+          <aside className="rounded-3xl border border-white/5 bg-slate-900/20 p-3 lg:self-start backdrop-blur-md">
             <nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {visibleNavigation.map((item) => {
                 const Icon = item.icon;
