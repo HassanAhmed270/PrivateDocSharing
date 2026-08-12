@@ -96,7 +96,15 @@
   - Mapped successful confirmation to trigger underlying REST endpoints (like `POST /api/requests` for `SEND_DOCUMENT` intent).
 - **Commit:** `f91e061` (`feat: add agent chat window`)
 
+### STAGE 9 — Notifications & Polish
+- **Goal:** Surface system notifications in the workspace header, verify responsive layout standards, and finalize UI polish.
+- **Key Deliverables:**
+  - Integrated notification dropdown list toggle in `AppShell.jsx` header.
+  - Clicking a notification marks it read using `PATCH /api/notifications/:id/read` and navigates user to the target signature request.
+  - Performed consistent layout checks, ensuring responsive rendering and clear loaders across all pages.
+- **Commit:** `b6c58df` (`feat: add notifications and finalize ui polish`)
+
 ---
 
-## 📋 Next Stage Pending
-- **STAGE 9:** Notifications & UI Polish (`GET /api/notifications`, `PATCH /api/notifications/:id/read`)
+## 🎉 Project Stage Complete!
+All frontend stages from Stage 0 to Stage 9 have been successfully implemented and tested locally.
