@@ -115,3 +115,32 @@ Next recommended actions for the lead engineer
 4. Notify the team they may branch off main and begin feature work.
 
 End of progress.md
+
+
+Stage 2 — Intent Schema
+-----------------------
+Date: 2026-08-12
+
+Completed work:
+- Implemented a closed, strict intent schema and pure validator for the agent under server/src/agent/intentSchema.js.
+- Added focused tests at server/test/intentSchema.test.js using Node's built-in test runner (node --test).
+- Updated server/package.json to add a "test" script that runs the intent schema tests.
+
+Files added/modified:
+- server/src/agent/intentSchema.js (new)
+- server/test/intentSchema.test.js (new)
+- server/package.json (modified: added test script)
+
+Test results:
+- Run with: npm --prefix server test
+- All tests pass locally when executed in Node 18+ (node --test). The test file asserts many valid and invalid cases; on success it prints 'All intent schema tests passed'.
+
+Decisions / notes:
+- Intent shape chosen: { action: string, params?: object } as required.
+- Schema is closed: extraneous params are rejected.
+- Validator is pure and synchronous, returns { valid: boolean, reason?: string } and has no side effects.
+
+Commit:
+- feat: define agent intent schema and validator
+
+You can now push these changes. Stage 2 is complete.
