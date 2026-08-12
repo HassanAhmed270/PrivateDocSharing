@@ -1,7 +1,4 @@
 import mongoose from 'mongoose';
-import debug from 'debug';
-
-const log = debug('privateai:db');
 
 export async function connectToDatabase(mongoUri) {
   if (!mongoUri) {
