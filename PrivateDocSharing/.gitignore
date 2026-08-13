@@ -1,0 +1,23 @@
+# Root-level ignores
+node_modules
+.env
+.env.local
+.env.*.local
+backend/
+
+# Client
+client/node_modules
+client/dist
+client/.env
+client/.env.local
+client/.env.*.local
+!client/.env.example
+
+# Logs
+*.log
+
+# OS / editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
