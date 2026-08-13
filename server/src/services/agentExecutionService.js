@@ -15,18 +15,70 @@ function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function cleanString(value) {
+  return typeof value === "string"
+    ? value.trim()
+    : "";
+}
+
 async function findDocumentByName(user, documentName) {
+  const cleanName = cleanString(documentName);
+
+  if (!cleanName) {
+    return null;
+  }
+
   return Document.findOne({
     organization: user.organization,
-    name: {
-      $regex: `^${escapeRegex(documentName.trim())}$`,
-      $options: "i",
-    },
     status: "active",
+    $or: [
+      {
+        name: {
+          $regex: `^${escapeRegex(cleanName)}$`,
+          $options: "i",
+        },
+      },
+      {
+        fileName: {
+          $regex: `^${escapeRegex(cleanName)}$`,
+          $options: "i",
+        },
+      },
+    ],
   }).select("+encryptionIv +encryptionAuthTag");
 }
 
-export async function executeAgentIntent(intent, user, originalMessage) {
+async function findRecipient(user, recipientName) {
+  const cleanName = cleanString(recipientName);
+
+  if (!cleanName) {
+    return null;
+  }
+
+  return User.findOne({
+    organization: user.organization,
+    $or: [
+      {
+        name: {
+          $regex: `^${escapeRegex(cleanName)}$`,
+          $options: "i",
+        },
+      },
+      {
+        email: {
+          $regex: `^${escapeRegex(cleanName)}$`,
+          $options: "i",
+        },
+      },
+    ],
+  }).select("_id name email role organization");
+}
+
+export async function executeAgentIntent(
+  intent,
+  user,
+  originalMessage
+) {
   switch (intent.action) {
     case "SEND_DOCUMENT":
       return executeSendDocument(intent, user);
@@ -49,29 +101,33 @@ export async function executeAgentIntent(intent, user, originalMessage) {
 
     default:
       throw Object.assign(
-        new Error(`Unsupported action: ${intent.action}`),
+        new Error(
+          `Unsupported action: ${intent.action}`
+        ),
         { status: 400 }
       );
   }
 }
 
 async function executeSendDocument(intent, user) {
-  const document = await findDocumentByName(user, intent.documentName);
+  const document = await findDocumentByName(
+    user,
+    intent.documentName
+  );
 
   if (!document) {
     throw Object.assign(
-      new Error(`No active document named "${intent.documentName}" was found.`),
+      new Error(
+        `No active document named "${intent.documentName}" was found.`
+      ),
       { status: 404 }
     );
   }
 
-  const recipient = await User.findOne({
-    organization: user.organization,
-    name: {
-      $regex: `^${escapeRegex(intent.recipientName.trim())}$`,
-      $options: "i",
-    },
-  }).select("_id name email role organization");
+  const recipient = await findRecipient(
+    user,
+    intent.recipientName
+  );
 
   if (!recipient) {
     throw Object.assign(
@@ -82,20 +138,39 @@ async function executeSendDocument(intent, user) {
     );
   }
 
-  const request = await createInternalDocumentRequest({
-    organizationId: user.organization,
-    requestedBy: user._id,
-    documentId: document._id,
-    recipientId: recipient._id,
-    message: [
-      "Created by PrivateAI Agent.",
-      `Requires review: ${intent.requiresReview ? "yes" : "no"}.`,
-      `Requires signature: ${intent.requiresSignature ? "yes" : "no"}.`,
-    ].join(" "),
-  });
+  if (
+    String(recipient._id) ===
+    String(user._id)
+  ) {
+    throw Object.assign(
+      new Error(
+        "You cannot send a document request to yourself."
+      ),
+      { status: 400 }
+    );
+  }
+
+  const request =
+    await createInternalDocumentRequest({
+      organizationId: user.organization,
+      requestedBy: user._id,
+      documentId: document._id,
+      recipientId: recipient._id,
+      message: [
+        "Created by PrivateAI Agent.",
+        `Requires review: ${
+          intent.requiresReview ? "yes" : "no"
+        }.`,
+        `Requires signature: ${
+          intent.requiresSignature ? "yes" : "no"
+        }.`,
+      ].join(" "),
+    });
 
   return {
     action: "SEND_DOCUMENT",
+    executed: true,
+    message: "Document request created successfully.",
     request,
   };
 }
@@ -106,85 +181,115 @@ async function executeShowPendingRequests(user) {
     recipient: user._id,
     status: "pending",
   })
-    .populate("document", "name fileName mimeType fileSize")
-    .populate("requestedBy", "name role")
+    .populate(
+      "document",
+      "name fileName mimeType fileSize"
+    )
+    .populate(
+      "requestedBy",
+      "name role"
+    )
     .sort({ createdAt: -1 });
 
   return {
     action: "SHOW_PENDING_REQUESTS",
+    executed: true,
     requests,
   };
 }
 
-async function executeShowDocumentStatus(intent, user) {
-  const document = await findDocumentByName(user, intent.documentName);
+async function executeShowDocumentStatus(
+  intent,
+  user
+) {
+  const document = await findDocumentByName(
+    user,
+    intent.documentName
+  );
 
   if (!document) {
     return {
       action: "SHOW_DOCUMENT_STATUS",
+      executed: true,
       found: false,
       message: `No active document named "${intent.documentName}" was found.`,
     };
   }
 
-  const hasAccess = await canUserAccessDocument({
-    document,
-    userId: user._id,
-    organizationId: user.organization,
-  });
+  const hasAccess =
+    await canUserAccessDocument({
+      document,
+      userId: user._id,
+      organizationId: user.organization,
+    });
 
   if (!hasAccess) {
     return {
       action: "SHOW_DOCUMENT_STATUS",
+      executed: true,
       found: false,
       message: `No accessible document named "${intent.documentName}" was found.`,
     };
   }
 
-  const latestRequest = await DocumentRequest.findOne({
-    organization: user.organization,
-    document: document._id,
-    $or: [
-      { requestedBy: user._id },
-      { recipient: user._id },
-    ],
-  })
-    .sort({ createdAt: -1 })
-    .select("status createdAt updatedAt");
+  const latestRequest =
+    await DocumentRequest.findOne({
+      organization: user.organization,
+      document: document._id,
+      $or: [
+        { requestedBy: user._id },
+        { recipient: user._id },
+      ],
+    })
+      .sort({ createdAt: -1 })
+      .select(
+        "status createdAt updatedAt"
+      );
 
   return {
     action: "SHOW_DOCUMENT_STATUS",
+    executed: true,
     found: true,
     document: {
       id: document._id,
       name: document.name,
       status: document.status,
       isEncrypted: document.isEncrypted,
-      latestRequestStatus: latestRequest?.status || null,
+      latestRequestStatus:
+        latestRequest?.status || null,
       updatedAt: document.updatedAt,
     },
   };
 }
 
-async function executeFindDocumentsUnderDiscussion(user) {
-  const requests = await DocumentRequest.find({
-    organization: user.organization,
-    status: "discussion",
-    $or: [
-      { requestedBy: user._id },
-      { recipient: user._id },
-    ],
-  })
-    .populate("document", "name fileName mimeType fileSize")
-    .sort({ updatedAt: -1 });
+async function executeFindDocumentsUnderDiscussion(
+  user
+) {
+  const requests =
+    await DocumentRequest.find({
+      organization: user.organization,
+      status: "discussion",
+      $or: [
+        { requestedBy: user._id },
+        { recipient: user._id },
+      ],
+    })
+      .populate(
+        "document",
+        "name fileName mimeType fileSize"
+      )
+      .sort({ updatedAt: -1 });
 
   return {
     action: "FIND_DOCUMENTS_UNDER_DISCUSSION",
-    documents: requests.map((request) => ({
-      requestId: request._id,
-      status: request.status,
-      document: request.document,
-    })),
+    executed: true,
+    documents: requests.map(
+      (request) => ({
+        requestId: request._id,
+        status: request.status,
+        document: request.document,
+      })
+    ),
   };
 }
 
@@ -193,14 +298,18 @@ async function executeViewDocumentForDiscussion(
   user,
   originalMessage
 ) {
-  const request = await DocumentRequest.findOne({
-    _id: intent.requestId,
-    organization: user.organization,
-    recipient: user._id,
-    status: {
-      $in: ["in_review", "discussion"],
-    },
-  }).populate("document");
+  const request =
+    await DocumentRequest.findOne({
+      _id: intent.requestId,
+      organization: user.organization,
+      recipient: user._id,
+      status: {
+        $in: [
+          "in_review",
+          "discussion",
+        ],
+      },
+    }).populate("document");
 
   if (!request) {
     throw Object.assign(
@@ -213,53 +322,72 @@ async function executeViewDocumentForDiscussion(
 
   if (!request.document) {
     throw Object.assign(
-      new Error("The document linked to this request was not found."),
+      new Error(
+        "The document linked to this request was not found."
+      ),
       { status: 404 }
     );
   }
 
-  const document = await Document.findOne({
-    _id: request.document._id,
-    organization: user.organization,
-    status: "active",
-  }).select("+encryptionIv +encryptionAuthTag");
+  const document =
+    await Document.findOne({
+      _id: request.document._id,
+      organization: user.organization,
+      status: "active",
+    }).select(
+      "+encryptionIv +encryptionAuthTag"
+    );
 
   if (!document) {
     throw Object.assign(
-      new Error("The document linked to this request was not found."),
+      new Error(
+        "The document linked to this request was not found."
+      ),
       { status: 404 }
     );
   }
 
   if (!document.isEncrypted) {
     throw Object.assign(
-      new Error("This document is not stored in the required encrypted format."),
+      new Error(
+        "This document is not stored in the required encrypted format."
+      ),
       { status: 409 }
     );
   }
 
-  const extracted = await getDecryptedDocumentText(document);
+  const extracted =
+    await getDecryptedDocumentText(
+      document
+    );
 
   if (!extracted.supported) {
     return {
-      action: "VIEW_DOCUMENT_FOR_DISCUSSION",
+      action:
+        "VIEW_DOCUMENT_FOR_DISCUSSION",
+      executed: true,
       requestId: request._id,
       found: true,
       answer: extracted.reason,
     };
   }
 
-  const relevantText = extractRelevantText(extracted.text, 4000);
+  const relevantText =
+    extractRelevantText(
+      extracted.text,
+      4000
+    );
 
-  // The decrypted buffer/text is used only in this call path and is not
-  // persisted, cached, logged, or returned to the client.
-  const answer = await answerDocumentQuestion(
-    originalMessage,
-    relevantText
-  );
+  const answer =
+    await answerDocumentQuestion(
+      originalMessage,
+      relevantText
+    );
 
   return {
-    action: "VIEW_DOCUMENT_FOR_DISCUSSION",
+    action:
+      "VIEW_DOCUMENT_FOR_DISCUSSION",
+    executed: true,
     requestId: request._id,
     found: true,
     answer,
